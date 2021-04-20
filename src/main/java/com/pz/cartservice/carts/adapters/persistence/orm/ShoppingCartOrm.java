@@ -1,4 +1,4 @@
-package com.pz.cartservice.carts.persistence;
+package com.pz.cartservice.carts.adapters.persistence.orm;
 
 import javax.persistence.*;
 import java.util.List;
@@ -22,7 +22,6 @@ public class ShoppingCartOrm {
 
     @OneToMany(
             mappedBy = "cart",
-            cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     public List<ShoppingCartItemOrm> getItems() {

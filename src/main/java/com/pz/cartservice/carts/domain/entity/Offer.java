@@ -1,13 +1,13 @@
-package com.pz.cartservice.carts.externalapi;
+package com.pz.cartservice.carts.domain.entity;
 
 import java.util.List;
 
-public class OfferExternalApi {
+public class Offer {
 
     private Long id;
     private Long ownerId;
     private String title;
-    private List<TierExternalApi> tiers;
+    private List<Tier> tiers;
 
     public Long getId() {
         return id;
@@ -33,11 +33,12 @@ public class OfferExternalApi {
         this.title = title;
     }
 
-    public List<TierExternalApi> getTiers() {
+    public List<Tier> getTiers() {
         return tiers;
     }
 
-    public void setTiers(List<TierExternalApi> tiers) {
+    public void setTiers(List<Tier> tiers) {
         this.tiers = tiers;
     }
+
 }

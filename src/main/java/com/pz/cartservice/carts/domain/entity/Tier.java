@@ -1,8 +1,8 @@
-package com.pz.cartservice.carts.externalapi;
+package com.pz.cartservice.carts.domain.entity;
 
 import java.math.BigDecimal;
 
-public class TierExternalApi {
+public class Tier {
 
     private Long id;
     private String title;
@@ -31,4 +31,5 @@ public class TierExternalApi {
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
+
 }

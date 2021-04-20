@@ -1,4 +1,4 @@
-package com.pz.cartservice.carts.controller;
+package com.pz.cartservice.carts.adapters.api;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +12,14 @@ import java.util.Map;
 
 @ControllerAdvice
 public class ShoppingCartExceptionHandler {
+
+
+    // TODO: other exceptions
+    @ExceptionHandler(value = RuntimeException.class)
+    public ResponseEntity<Object> handle(RuntimeException runtimeException) {
+        return new ResponseEntity<>(runtimeException.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException exception) {

@@ -6,6 +6,7 @@ API will probably be changed, any suggestions on how to do so are very welcome. 
  * getting the cart
  * getting single item from the cart
  * editing item in the cart
+ * submitting cart (creating orders)
  
 
 ### Getting empty shopping cart
@@ -106,6 +107,20 @@ Example body:
 
 Returns ID of edited item.
 
+
+### Submitting the cart
+
+URL: `http://localhost:8081/carts/submission` (method: POST)
+
+Example body
+```json
+{
+    "cartId": 1,
+    "buyerId": 1
+}
+```
+
+Returns string with a message about success. Creates orders via the orders-service.
 
 
 # java-repository-template

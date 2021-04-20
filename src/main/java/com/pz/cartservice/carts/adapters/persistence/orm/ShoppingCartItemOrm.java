@@ -1,4 +1,4 @@
-package com.pz.cartservice.carts.persistence;
+package com.pz.cartservice.carts.adapters.persistence.orm;
 
 import javax.persistence.*;
 
@@ -47,6 +47,7 @@ public class ShoppingCartItemOrm {
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cart_id")
     public ShoppingCartOrm getCart() {
         return cart;
     }

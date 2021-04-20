@@ -1,8 +1,11 @@
-package com.pz.cartservice.carts.dto;
+package com.pz.cartservice.carts.adapters.api;
+
+
+import com.pz.cartservice.carts.domain.entity.ShoppingCartItem;
 
 import java.math.BigDecimal;
 
-public class ShoppingCartItemGetDTO {
+public class ShoppingCartItemResponse {
 
     private final Long id;
     private final String description;
@@ -15,7 +18,7 @@ public class ShoppingCartItemGetDTO {
     private final String tierTitle;
     private final BigDecimal tierPrice;
 
-    public ShoppingCartItemGetDTO(Long id, String description, Long offerId, Long offerOwnerId, String offerTitle, Long tierId, String tierTitle, BigDecimal tierPrice) {
+    private ShoppingCartItemResponse(Long id, String description, Long offerId, Long offerOwnerId, String offerTitle, Long tierId, String tierTitle, BigDecimal tierPrice) {
         this.id = id;
         this.description = description;
         this.offerId = offerId;
@@ -24,6 +27,18 @@ public class ShoppingCartItemGetDTO {
         this.tierId = tierId;
         this.tierTitle = tierTitle;
         this.tierPrice = tierPrice;
+    }
+
+    public static ShoppingCartItemResponse fromEntity(ShoppingCartItem shoppingCartItem) {
+        return new ShoppingCartItemResponse(
+                shoppingCartItem.getId(),
+                shoppingCartItem.getDescription(),
+                shoppingCartItem.getOffer().getId(),
+                shoppingCartItem.getOffer().getOwnerId(),
+                shoppingCartItem.getOffer().getTitle(),
+                shoppingCartItem.getTier().getId(),
+                shoppingCartItem.getTier().getTitle(),
+                shoppingCartItem.getTier().getPrice());
     }
 
     public Long getId() {
@@ -57,4 +72,5 @@ public class ShoppingCartItemGetDTO {
     public BigDecimal getTierPrice() {
         return tierPrice;
     }
+
 }
