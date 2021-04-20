@@ -1,3 +1,10 @@
+# Shopping cart microservice
+
+[![codecov](https://codecov.io/gh/ProgramowanieZespoloweIS2021/cart-service/branch/main/graph/badge.svg?token=8ZTZXEZT6F)](https://codecov.io/gh/ProgramowanieZespoloweIS2021/cart-service)
+
+![CI/CD](https://github.com/ProgramowanieZespoloweIS2021/cart-service/actions/workflows/ci.yml/badge.svg)
+
+
 ## API description
 API will probably be changed, any suggestions on how to do so are very welcome. Supported operations:
  * getting empty (new) shopping cart (creates it in the database)
@@ -122,15 +129,3 @@ Example body
 
 Returns string with a message about success. Creates orders via the orders-service.
 
-
-# java-repository-template
-
-### How to finish setting up java repository
-
-* Register repository to [codecov.io](https://app.codecov.io/). *Remember to add proper secret into your repository configuration*
-* Create badge for code coverage. Copy from:`https://app.codecov.io/gh/<user>/<repository>>/settings/badge`
-* Create badge for CI action 
-* Template is prepared for Maven based project. Add JaCoCo to your project to properly generate coverage report.
-```
-![CI/CD](https://github.com/<user>/<repository>/actions/workflows/ci.yml/badge.svg)
-```
