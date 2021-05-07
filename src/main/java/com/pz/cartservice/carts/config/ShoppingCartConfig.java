@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.validation.Valid;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -18,5 +19,10 @@ public class ShoppingCartConfig {
     @Bean
     public URL ordersUrl(@Value("${orders.url}") String ordersUrl) throws MalformedURLException {
         return new URL(ordersUrl);
+    }
+
+    @Bean
+    public URL paymentUrl(@Value("${payment.url}") String paymentUrl) throws MalformedURLException {
+        return new URL(paymentUrl);
     }
 }

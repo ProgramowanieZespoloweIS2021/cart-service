@@ -4,10 +4,12 @@ import com.pz.cartservice.carts.adapters.api.ShoppingCartItemRequest;
 import com.pz.cartservice.carts.domain.entity.*;
 import com.pz.cartservice.carts.domain.repository.OfferRepository;
 import com.pz.cartservice.carts.domain.repository.OrderRepository;
+import com.pz.cartservice.carts.domain.repository.PaymentRepository;
 import com.pz.cartservice.carts.domain.repository.ShoppingCartRepository;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -20,14 +22,17 @@ public class ShoppingCartService {
     private final ShoppingCartRepository shoppingCartRepository;
     private final OfferRepository offerRepository;
     private final OrderRepository orderRepository;
+    private final PaymentRepository paymentRepository;
 
 
     public ShoppingCartService(ShoppingCartRepository shoppingCartRepository,
                                OfferRepository offerRepository,
-                               OrderRepository orderRepository) {
+                               OrderRepository orderRepository,
+                               PaymentRepository paymentRepository) {
         this.shoppingCartRepository = shoppingCartRepository;
         this.offerRepository = offerRepository;
         this.orderRepository = orderRepository;
+        this.paymentRepository = paymentRepository;
     }
 
 
@@ -36,10 +41,16 @@ public class ShoppingCartService {
             throw new RuntimeException("Invalid cart id."); // TODO: better exception and message
         }
         ShoppingCart shoppingCart = shoppingCartRepository.getCart(cartId).orElseThrow(() -> new RuntimeException("Invalid cart id."));
+        shoppingCart.getItems().forEach(this::insertOfferDetailsIntoShoppingCartItem);
+        BigDecimal totalPrice = shoppingCart.getItems().stream()
+                .map(item -> item.getTier().getPrice())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        Payment payment = new Payment(buyerId, totalPrice, "IN_PROGRESS");
         List<Order> orders = shoppingCart.getItems().stream()
                 .map(item -> new Order(buyerId, item.getOffer().getId(), item.getTier().getId(), item.getDescription()))
                 .collect(Collectors.toList());
         orderRepository.add(orders);
+        paymentRepository.add(payment);
         shoppingCartRepository.deleteCart(cartId);
     }
 

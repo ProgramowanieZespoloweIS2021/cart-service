@@ -3,6 +3,7 @@ package com.pz.cartservice;
 import com.pz.cartservice.carts.domain.ShoppingCartService;
 import com.pz.cartservice.carts.domain.repository.OfferRepository;
 import com.pz.cartservice.carts.domain.repository.OrderRepository;
+import com.pz.cartservice.carts.domain.repository.PaymentRepository;
 import com.pz.cartservice.carts.domain.repository.ShoppingCartRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,9 @@ public class CreateCartTest {
     @Mock
     private OrderRepository orderRepository;
 
+    @Mock
+    private PaymentRepository paymentRepository;
+
     private ShoppingCartService underTest;
 
     @BeforeEach
@@ -29,8 +33,9 @@ public class CreateCartTest {
         shoppingCartRepository = Mockito.mock(ShoppingCartRepository.class);
         offerRepository = Mockito.mock(OfferRepository.class);
         orderRepository = Mockito.mock(OrderRepository.class);
+        paymentRepository = Mockito.mock(PaymentRepository.class);
         Mockito.when(shoppingCartRepository.createCart()).thenReturn(1L);
-        underTest = new ShoppingCartService(shoppingCartRepository, offerRepository, orderRepository);
+        underTest = new ShoppingCartService(shoppingCartRepository, offerRepository, orderRepository, paymentRepository);
     }
 
     @Test
