@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 )
 @ActiveProfiles("test")
 @Transactional
-public class CreateCartIntegrationTest {
+public class CreateCartIT {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
