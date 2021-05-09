@@ -1,4 +1,4 @@
-package com.pz.cartservice;
+package com.pz.cartservice.unit;
 
 import com.pz.cartservice.carts.domain.ShoppingCartService;
 import com.pz.cartservice.carts.domain.repository.OfferRepository;
@@ -34,13 +34,15 @@ public class CreateCartTest {
         offerRepository = Mockito.mock(OfferRepository.class);
         orderRepository = Mockito.mock(OrderRepository.class);
         paymentRepository = Mockito.mock(PaymentRepository.class);
-        Mockito.when(shoppingCartRepository.createCart()).thenReturn(1L);
         underTest = new ShoppingCartService(shoppingCartRepository, offerRepository, orderRepository, paymentRepository);
     }
 
     @Test
     public void validEmptyCartIsCreated() {
+        Mockito.when(shoppingCartRepository.createCart()).thenReturn(1L);
+
         Long cartId = underTest.createEmptyShoppingCart();
+
         assertEquals(cartId, 1L);
         Mockito.verify(shoppingCartRepository, Mockito.times(1)).createCart();
     }
