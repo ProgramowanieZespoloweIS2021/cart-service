@@ -12,7 +12,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.math.BigDecimal;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -22,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 )
 @ActiveProfiles("test")
 @Transactional
-public class CreateCartIT {
+public class EmptyCartIT {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -35,19 +38,25 @@ public class CreateCartIT {
     }
 
     @Test
-    public void canCreateEmptyShoppingCart() throws Exception {
+    public void canCreateAndAccessEmptyShoppingCart() throws Exception {
+
+        // send request to create empty shopping cart and return its ID
         MvcResult createCartResult = mockMvc
                 .perform(get("/carts"))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
+        // get ID of created cart from the response
         long createdCartId = Long.parseLong(createCartResult.getResponse().getContentAsString());
 
+        // check if the cart has been created and contains no items
         mockMvc
                 .perform(get("/carts/" + createdCartId))
                 .andExpect(status().is2xxSuccessful())
-                .andReturn(); // TODO: check content
-
-
+                .andExpect(jsonPath("$.id").value(createdCartId))
+                .andExpect(jsonPath("$.totalPrice").value(BigDecimal.ZERO))
+                .andExpect(jsonPath("$.items").isEmpty())
+                .andReturn();
     }
+
 }

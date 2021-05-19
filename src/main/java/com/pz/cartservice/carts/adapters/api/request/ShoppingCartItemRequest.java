@@ -1,4 +1,7 @@
-package com.pz.cartservice.carts.adapters.api;
+package com.pz.cartservice.carts.adapters.api.request;
+
+
+import com.pz.cartservice.carts.domain.entity.ShoppingCartItem;
 
 import javax.validation.constraints.NotNull;
 
@@ -18,6 +21,10 @@ public class ShoppingCartItemRequest {
         this.description = description;
     }
 
+    public static ShoppingCartItem toEntity(Long itemId, ShoppingCartItemRequest request) {
+        return new ShoppingCartItem(itemId, request.getDescription(), request.getOfferId(), request.getTierId());
+    }
+
     public Long getOfferId() {
         return offerId;
     }
@@ -29,4 +36,5 @@ public class ShoppingCartItemRequest {
     public String getDescription() {
         return description;
     }
+
 }

@@ -14,7 +14,6 @@ import java.util.Map;
 public class ShoppingCartExceptionHandler {
 
 
-    // TODO: other exceptions
     @ExceptionHandler(value = RuntimeException.class)
     public ResponseEntity<Object> handle(RuntimeException runtimeException) {
         return new ResponseEntity<>(runtimeException.getMessage(), HttpStatus.BAD_REQUEST);

@@ -1,6 +1,7 @@
 package com.pz.cartservice.unit;
 
 import com.pz.cartservice.carts.domain.ShoppingCartService;
+import com.pz.cartservice.carts.domain.entity.ShoppingCart;
 import com.pz.cartservice.carts.domain.repository.OfferRepository;
 import com.pz.cartservice.carts.domain.repository.OrderRepository;
 import com.pz.cartservice.carts.domain.repository.PaymentRepository;
@@ -39,11 +40,11 @@ public class CreateCartTest {
 
     @Test
     public void validEmptyCartIsCreated() {
-        Mockito.when(shoppingCartRepository.createCart()).thenReturn(1L);
+        Mockito.when(shoppingCartRepository.add(Mockito.any(ShoppingCart.class))).thenReturn(1L);
 
         Long cartId = underTest.createEmptyShoppingCart();
 
         assertEquals(cartId, 1L);
-        Mockito.verify(shoppingCartRepository, Mockito.times(1)).createCart();
+        Mockito.verify(shoppingCartRepository, Mockito.times(1)).add(Mockito.any(ShoppingCart.class));
     }
 }

@@ -1,7 +1,10 @@
 package com.pz.cartservice.carts.domain;
 
-import com.pz.cartservice.carts.adapters.api.ShoppingCartItemRequest;
+import com.pz.cartservice.carts.domain.dto.ShoppingCartDetails;
+import com.pz.cartservice.carts.domain.dto.ShoppingCartItemDetails;
 import com.pz.cartservice.carts.domain.entity.*;
+import com.pz.cartservice.carts.domain.exception.InvalidCartSpecificationException;
+import com.pz.cartservice.carts.domain.exception.InvalidItemSpecificationException;
 import com.pz.cartservice.carts.domain.repository.OfferRepository;
 import com.pz.cartservice.carts.domain.repository.OrderRepository;
 import com.pz.cartservice.carts.domain.repository.PaymentRepository;
@@ -36,81 +39,98 @@ public class ShoppingCartService {
     }
 
 
-    public void submitCart(Long cartId, Long buyerId) { // TODO: add validation for user
-        if(!cartExists(cartId)) {
-            throw new RuntimeException("Invalid cart id."); // TODO: better exception and message
+    public void submitCart(Long cartId, Long buyerId) {
+        ShoppingCart shoppingCart = shoppingCartRepository.get(cartId)
+                .orElseThrow(() -> new InvalidCartSpecificationException(String.format("Cart with ID %d does not exist.", cartId)));
+        if(shoppingCart.getItems().isEmpty()) {
+            throw new InvalidCartSpecificationException(String.format("Can not submit cart with ID %d because it is empty.", cartId));
         }
-        ShoppingCart shoppingCart = shoppingCartRepository.getCart(cartId).orElseThrow(() -> new RuntimeException("Invalid cart id."));
-        shoppingCart.getItems().forEach(this::insertOfferDetailsIntoShoppingCartItem);
-        BigDecimal totalPrice = shoppingCart.getItems().stream()
-                .map(item -> item.getTier().getPrice())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        Payment payment = new Payment(buyerId, totalPrice, "IN_PROGRESS");
-        List<Order> orders = shoppingCart.getItems().stream()
-                .map(item -> new Order(buyerId, item.getOffer().getId(), item.getTier().getId(), item.getDescription()))
-                .collect(Collectors.toList());
+        Payment payment = getPaymentForGivenCart(shoppingCart, buyerId);
+        List<Order> orders = getOrdersForGivenCart(shoppingCart, buyerId);
         orderRepository.add(orders);
         paymentRepository.add(payment);
-        shoppingCartRepository.deleteCart(cartId);
+        shoppingCartRepository.delete(cartId);
     }
 
 
     public Long createEmptyShoppingCart() {
-        return shoppingCartRepository.createCart();
+        ShoppingCart shoppingCart = ShoppingCart.emptyCart();
+        return shoppingCartRepository.add(shoppingCart);
     }
 
 
-    public ShoppingCart getExistingShoppingCart(Long cartId) {
-        ShoppingCart shoppingCart = shoppingCartRepository.getCart(cartId).orElseThrow(() -> new RuntimeException("Invalid cart id.")); // TODO: better exception
-        shoppingCart.getItems().forEach(this::insertOfferDetailsIntoShoppingCartItem);
-        return shoppingCart;
+    public ShoppingCartDetails getExistingShoppingCart(Long cartId) {
+        ShoppingCart shoppingCart = shoppingCartRepository.get(cartId)
+                .orElseThrow(() -> new InvalidCartSpecificationException(String.format("Cart with ID %d does not exist.", cartId)));
+        List<ShoppingCartItemDetails> itemDetails = shoppingCart.getItems().stream()
+                .map(this::fetchOfferDetailsForGivenItem)
+                .collect(Collectors.toList());
+        BigDecimal totalPrice = getTotalPriceForGivenCart(shoppingCart);
+        return new ShoppingCartDetails(shoppingCart.getId(), totalPrice, itemDetails);
     }
 
 
-    public Long addItemToCart(Long cartId, ShoppingCartItemRequest item) {
-        if(!offerAndTierExist(item.getOfferId(), item.getTierId())) {
-            throw new RuntimeException("Invalid cart id."); // TODO: better exception and message
+    public void addItemToCart(Long cartId, ShoppingCartItem shoppingCartItem) {
+        if(!offerAndTierExist(shoppingCartItem.getOfferId(), shoppingCartItem.getTierId())) {
+            throw new InvalidItemSpecificationException("Invalid offer or tier specification.");
         }
-        return shoppingCartRepository.addItemToCart(cartId, item);
+        ShoppingCart shoppingCart = shoppingCartRepository.get(cartId)
+                .orElseThrow(() -> new InvalidCartSpecificationException(String.format("Cart with ID %d does not exist.", cartId)));
+        shoppingCart.addItem(shoppingCartItem);
+        shoppingCartRepository.add(shoppingCart);
     }
 
 
-    public Long removeItemFromCart(Long cartId, Long itemId) {
-        if(!cartContainsItem(cartId, itemId)) {
-            throw new RuntimeException("Invalid cart id."); // TODO: better exception and message
-        }
-        shoppingCartRepository.deleteItem(itemId);
-        return itemId;
+    public void removeItemFromCart(Long cartId, Long itemId) {
+        ShoppingCart shoppingCart = shoppingCartRepository.get(cartId)
+                .orElseThrow(() -> new InvalidCartSpecificationException(String.format("Cart with ID %d does not exist.", cartId)));
+        shoppingCart.removeItem(itemId);
+        shoppingCartRepository.add(shoppingCart);
     }
 
 
-    public ShoppingCartItem getItemFromShoppingCart(Long cartId, Long itemId) {
-        if(!cartContainsItem(cartId, itemId)) {
-            throw new RuntimeException("Invalid cart id."); // TODO: better exception and message
-        }
-        ShoppingCartItem shoppingCartItem = shoppingCartRepository.getItem(itemId).orElseThrow(() -> new RuntimeException("Invalid item id.")); // TODO: better exception
-        insertOfferDetailsIntoShoppingCartItem(shoppingCartItem);
-        return shoppingCartItem;
+    public ShoppingCartItemDetails getItemFromShoppingCart(Long cartId, Long itemId) {
+        ShoppingCart shoppingCart = shoppingCartRepository.get(cartId)
+                .orElseThrow(() -> new InvalidCartSpecificationException(String.format("Cart with ID %d does not exist.", cartId)));
+        return fetchOfferDetailsForGivenItem(shoppingCart.getItem(itemId));
     }
 
 
-    public Long editItemInCart(Long cartId, Long itemId, ShoppingCartItemRequest itemUpdate) {
-        if(!cartContainsItem(cartId, itemId)) {
-            throw new RuntimeException("Invalid cart id."); // TODO: better exception and message
-        }
-        shoppingCartRepository.editItem(itemId, itemUpdate);
-        return itemId;
+    public void editItemInCart(Long cartId, ShoppingCartItem shoppingCartItem) {
+        ShoppingCart shoppingCart = shoppingCartRepository.get(cartId)
+                .orElseThrow(() -> new InvalidCartSpecificationException(String.format("Cart with ID %d does not exist.", cartId)));
+        shoppingCart.updateItem(shoppingCartItem);
+        shoppingCartRepository.add(shoppingCart);
     }
 
 
-    private Boolean cartExists(Long cartId) {
-        return shoppingCartRepository.getCart(cartId).isPresent();
+    private BigDecimal getItemPrice(ShoppingCartItem shoppingCartItem) {
+        Offer offer = offerRepository.get(shoppingCartItem.getOfferId())
+                .orElseThrow(() -> new RuntimeException(String.format("Could not access offer with ID %d to compute total price.", shoppingCartItem.getOfferId())));
+        Tier chosenTier = offer.getTiers().stream()
+                .filter(tier -> tier.getId().equals(shoppingCartItem.getTierId())).findFirst()
+                .orElseThrow(() -> new RuntimeException("Could not access tier to compute total price."));
+        return chosenTier.getPrice();
     }
 
 
-    private Boolean cartContainsItem(Long cartId, Long itemId) {
-        ShoppingCart shoppingCart = shoppingCartRepository.getCart(cartId).orElseThrow(() -> new RuntimeException("Invalid cart id.")); // TODO: better exception
-        return shoppingCart.getItems().stream().anyMatch(item -> item.getId().equals(itemId));
+    private BigDecimal getTotalPriceForGivenCart(ShoppingCart shoppingCart) {
+        return shoppingCart.getItems().stream()
+                .map(this::getItemPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+
+    private Payment getPaymentForGivenCart(ShoppingCart shoppingCart, Long buyerId) {
+        BigDecimal totalPrice = getTotalPriceForGivenCart(shoppingCart);
+        return new Payment(buyerId, totalPrice, "IN_PROGRESS");
+    }
+
+
+    private List<Order> getOrdersForGivenCart(ShoppingCart shoppingCart, Long buyerId) {
+        return shoppingCart.getItems().stream()
+                .map(item -> new Order(buyerId, item.getOfferId(), item.getTierId(), item.getDescription()))
+                .collect(Collectors.toList());
     }
 
 
@@ -123,19 +143,10 @@ public class ShoppingCartService {
     }
 
 
-    private void insertOfferDetailsIntoShoppingCartItem(ShoppingCartItem shoppingCartItem) {
-        Offer offer = offerRepository.get(shoppingCartItem.getOffer().getId())
-                .orElseThrow(() -> new RuntimeException("Invalid cart id.")); // TODO: better exception
-        shoppingCartItem.getOffer().setOwnerId(offer.getOwnerId());
-        shoppingCartItem.getOffer().setTitle(offer.getTitle());
-        shoppingCartItem.getOffer().setTiers(offer.getTiers());
-
-        Long selectedTierId = shoppingCartItem.getTier().getId();
-        Tier selectedTier = offer.getTiers().stream()
-                .filter(tier -> tier.getId().equals(selectedTierId)).findFirst()
-                .orElseThrow(() -> new RuntimeException("Invalid cart id.")); // TODO: better exception
-        shoppingCartItem.getTier().setTitle(selectedTier.getTitle());
-        shoppingCartItem.getTier().setPrice(selectedTier.getPrice());
+    private ShoppingCartItemDetails fetchOfferDetailsForGivenItem(ShoppingCartItem shoppingCartItem) {
+        Offer offer = offerRepository.get(shoppingCartItem.getOfferId())
+                .orElseThrow(() -> new RuntimeException(String.format("Could not access offer with ID %d.", shoppingCartItem.getOfferId())));
+        return ShoppingCartItemDetails.fromShoppingCartItem(shoppingCartItem, offer);
     }
 
 }

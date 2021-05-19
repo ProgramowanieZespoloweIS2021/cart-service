@@ -1,5 +1,7 @@
 package com.pz.cartservice.carts.adapters.persistence.orm;
 
+import com.pz.cartservice.carts.domain.entity.ShoppingCartItem;
+
 import javax.persistence.*;
 
 @Entity
@@ -54,5 +56,24 @@ public class ShoppingCartItemOrm {
 
     public void setCart(ShoppingCartOrm cart) {
         this.cart = cart;
+    }
+
+
+    public static ShoppingCartItem toEntity(ShoppingCartItemOrm shoppingCartItemOrm) {
+        return new ShoppingCartItem(
+                shoppingCartItemOrm.getId(),
+                shoppingCartItemOrm.getDescription(),
+                shoppingCartItemOrm.getOfferId(),
+                shoppingCartItemOrm.getTierId());
+    }
+
+    public static ShoppingCartItemOrm fromEntity(ShoppingCartItem shoppingCartItem, ShoppingCartOrm shoppingCartOrm) {
+        ShoppingCartItemOrm shoppingCartItemOrm = new ShoppingCartItemOrm();
+        shoppingCartItemOrm.setId(shoppingCartItem.getId());
+        shoppingCartItemOrm.setOfferId(shoppingCartItem.getOfferId());
+        shoppingCartItemOrm.setTierId(shoppingCartItem.getTierId());
+        shoppingCartItemOrm.setDescription(shoppingCartItem.getDescription());
+        shoppingCartItemOrm.setCart(shoppingCartOrm);
+        return shoppingCartItemOrm;
     }
 }

@@ -1,4 +1,4 @@
-package com.pz.cartservice.carts.adapters.api;
+package com.pz.cartservice.carts.adapters.api.request;
 
 import javax.validation.constraints.NotNull;
 

@@ -22,7 +22,8 @@ public class ShoppingCartOrm {
 
     @OneToMany(
             mappedBy = "cart",
-            orphanRemoval = true
+            orphanRemoval = true,
+            cascade = CascadeType.ALL
     )
     public List<ShoppingCartItemOrm> getItems() {
         return items;

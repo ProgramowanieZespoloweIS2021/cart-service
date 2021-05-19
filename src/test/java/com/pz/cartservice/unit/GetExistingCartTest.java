@@ -1,6 +1,7 @@
 package com.pz.cartservice.unit;
 
 import com.pz.cartservice.carts.domain.ShoppingCartService;
+import com.pz.cartservice.carts.domain.dto.ShoppingCartDetails;
 import com.pz.cartservice.carts.domain.entity.ShoppingCart;
 import com.pz.cartservice.carts.domain.repository.OfferRepository;
 import com.pz.cartservice.carts.domain.repository.OrderRepository;
@@ -46,21 +47,21 @@ public class GetExistingCartTest {
     public void validEmptyCartIsReturned() { // TODO: add non-empty test
         Long existingCartId = 1L;
         ShoppingCart emptyShoppingCart = new ShoppingCart(existingCartId, Collections.emptyList());
-        Mockito.when(shoppingCartRepository.getCart(existingCartId)).thenReturn(Optional.of(emptyShoppingCart));
+        Mockito.when(shoppingCartRepository.get(existingCartId)).thenReturn(Optional.of(emptyShoppingCart));
 
-        ShoppingCart returnedCart = underTest.getExistingShoppingCart(existingCartId);
+        ShoppingCartDetails returnedCart = underTest.getExistingShoppingCart(existingCartId);
 
         assertEquals(returnedCart.getId(), emptyShoppingCart.getId());
         assertEquals(returnedCart.getItems().size(), emptyShoppingCart.getItems().size());
-        Mockito.verify(shoppingCartRepository, Mockito.times(1)).getCart(existingCartId);
+        Mockito.verify(shoppingCartRepository, Mockito.times(1)).get(existingCartId);
     }
 
     @Test
     public void accessingNonExistingCartFails() {
         Long nonExistingCartId = 1L;
-        Mockito.when(shoppingCartRepository.getCart(nonExistingCartId)).thenReturn(Optional.empty());
+        Mockito.when(shoppingCartRepository.get(nonExistingCartId)).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> underTest.getExistingShoppingCart(nonExistingCartId));
-        Mockito.verify(shoppingCartRepository, Mockito.times(1)).getCart(nonExistingCartId);
+        Mockito.verify(shoppingCartRepository, Mockito.times(1)).get(nonExistingCartId);
     }
 }

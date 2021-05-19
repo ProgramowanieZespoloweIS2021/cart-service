@@ -41,4 +41,10 @@ public class Offer {
         this.tiers = tiers;
     }
 
+    public Tier getTierById(Long tierId) {
+        return tiers.stream()
+                .filter(tier -> tier.getId().equals(tierId)).findFirst()
+                .orElseThrow(() -> new RuntimeException("Offer does not contain such tier."));
+    }
+
 }

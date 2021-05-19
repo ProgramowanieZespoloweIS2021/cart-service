@@ -1,7 +1,9 @@
-package com.pz.cartservice.carts.adapters.api;
+package com.pz.cartservice.carts.adapters.api.response;
 
 
-import com.pz.cartservice.carts.domain.entity.ShoppingCartItem;
+import com.pz.cartservice.carts.domain.dto.ShoppingCartItemDetails;
+import com.pz.cartservice.carts.domain.entity.Offer;
+import com.pz.cartservice.carts.domain.entity.Tier;
 
 import java.math.BigDecimal;
 
@@ -18,7 +20,9 @@ public class ShoppingCartItemResponse {
     private final String tierTitle;
     private final BigDecimal tierPrice;
 
-    private ShoppingCartItemResponse(Long id, String description, Long offerId, Long offerOwnerId, String offerTitle, Long tierId, String tierTitle, BigDecimal tierPrice) {
+    private ShoppingCartItemResponse(Long id, String description,
+                                     Long offerId, Long offerOwnerId, String offerTitle,
+                                     Long tierId, String tierTitle, BigDecimal tierPrice) {
         this.id = id;
         this.description = description;
         this.offerId = offerId;
@@ -29,16 +33,18 @@ public class ShoppingCartItemResponse {
         this.tierPrice = tierPrice;
     }
 
-    public static ShoppingCartItemResponse fromEntity(ShoppingCartItem shoppingCartItem) {
+    public static ShoppingCartItemResponse fromShoppingCartItemDetails(ShoppingCartItemDetails shoppingCartItemDetails) {
+        Offer chosenOffer = shoppingCartItemDetails.getOffer();
+        Tier chosenTier = chosenOffer.getTierById(shoppingCartItemDetails.getTierId());
         return new ShoppingCartItemResponse(
-                shoppingCartItem.getId(),
-                shoppingCartItem.getDescription(),
-                shoppingCartItem.getOffer().getId(),
-                shoppingCartItem.getOffer().getOwnerId(),
-                shoppingCartItem.getOffer().getTitle(),
-                shoppingCartItem.getTier().getId(),
-                shoppingCartItem.getTier().getTitle(),
-                shoppingCartItem.getTier().getPrice());
+                shoppingCartItemDetails.getId(),
+                shoppingCartItemDetails.getDescription(),
+                chosenOffer.getId(),
+                chosenOffer.getOwnerId(),
+                chosenOffer.getTitle(),
+                chosenTier.getId(),
+                chosenTier.getTitle(),
+                chosenTier.getPrice());
     }
 
     public Long getId() {
