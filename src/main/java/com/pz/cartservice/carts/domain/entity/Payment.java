@@ -29,5 +29,7 @@ public class Payment {
         return status;
     }
 
-    public List<String> getOfferTitles() { return offerTitles; }
+    public List<String> getOfferTitles() {
+        return offerTitles;
+    }
 }
