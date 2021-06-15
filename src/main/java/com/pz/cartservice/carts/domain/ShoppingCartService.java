@@ -123,7 +123,12 @@ public class ShoppingCartService {
 
     private Payment getPaymentForGivenCart(ShoppingCart shoppingCart, Long buyerId) {
         BigDecimal totalPrice = getTotalPriceForGivenCart(shoppingCart);
-        return new Payment(buyerId, totalPrice, "IN_PROGRESS");
+        List<String> offerTitles = shoppingCart.getItems().stream()
+                .map(item -> offerRepository.get(item.getOfferId()))
+                .filter(Optional::isPresent)
+                .map(offer -> offer.get().getTitle())
+                .collect(Collectors.toList());
+        return new Payment(buyerId, totalPrice, "IN_PROGRESS", offerTitles);
     }
 
 
